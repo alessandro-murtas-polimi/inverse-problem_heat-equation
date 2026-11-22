@@ -1,36 +1,23 @@
 #include <iostream>
 #include "Heat3D.hpp"
+#include "HeatEquation.hpp"
 
-int main(int argc, char const * argv[])
+int main(int argc, char const *argv[])
 {
-    if (argc != 2) {
-        std::cout << "Usage: ./main <path-to-input-mesh>" << std::endl;
-        return 1;
+    double T=0.5, dt=0.01, mu=1.0, uD=5.0;
+    std::string mesh_filename = "../mesh.msh";
+
+    if (argc == 5) {
+        uD = atof(argv[1]);
+        T = atof(argv[2]);
+        dt = atof(argv[3]);
+        mu = atof(argv[4]);
+        mesh_filename = argv[5];
     }
 
-    constexpr unsigned int dim = Heat3D::dim;
-    const unsigned int r = 1;
+    HeatEquation<3> problem(uD, T, dt, mu, mesh_filename);
 
-    const auto mu  = [](const Point<dim> &/*p*/) {
-        return 10.0;
-    };
-
-    const auto f  = [](const Point<dim> &/*p*/) {
-        return 0.0;
-    };
-
-    const auto h  = [](const Point<dim> &/*p*/) {
-        return 0.0;
-    };
-
-    const double u_d = 5.0;
-
-    Heat3D problem(argv[1], r, mu, f, h, u_d);
-
-    problem.setup();
-    problem.assemble();
-    problem.solve();
-    problem.output();
+    problem.run();
 
     return 0;
 }
