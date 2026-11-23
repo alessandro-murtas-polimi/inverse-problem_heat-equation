@@ -28,8 +28,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "RightHandSide.hpp"
-
 using namespace dealii;
 
 template <int dim>
@@ -51,9 +49,9 @@ private:
     void solve_dt();
     void output_results();
 
-    Triangulation<dim> triangulation;
-    const FE_SimplexP<dim>    fe;
-    DoFHandler<dim>    dof_handler;
+    Triangulation<dim>     triangulation;
+    const FE_SimplexP<dim> fe;
+    DoFHandler<dim>        dof_handler;
 
     // AffineConstraints<double> constraints;
 
@@ -189,15 +187,11 @@ void HeatEquation<dim>::run()
     setup_system();
 
     Vector<double> tmp;
-    Vector<double> forcing_terms;
-
 
     time            = 0.0;
     timestep_number = 0;
 
     tmp.reinit(solution.size());
-    forcing_terms.reinit(solution.size());
-
 
     VectorTools::interpolate(dof_handler,
                             Functions::ZeroFunction<dim>(),
@@ -218,28 +212,9 @@ void HeatEquation<dim>::run()
         laplace_matrix.vmult(tmp, old_solution);
         system_rhs.add(-(1 - theta) * dt, tmp);
 
-        RightHandSide<dim> rhs_function;
-        rhs_function.set_time(time);
-        VectorTools::create_right_hand_side(dof_handler,
-                                            QGaussSimplex<dim>(fe.degree + 1),
-                                            rhs_function,
-                                            tmp);
-        forcing_terms = tmp;
-        forcing_terms *= dt * theta;
-
-        rhs_function.set_time(time - dt);
-        VectorTools::create_right_hand_side(dof_handler,
-                                            QGaussSimplex<dim>(fe.degree + 1),
-                                            rhs_function,
-                                            tmp);
-
-        forcing_terms.add(dt * (1 - theta), tmp);
-        system_rhs += forcing_terms;
-
         system_matrix.copy_from(mass_matrix);
         system_matrix.add(theta * dt, laplace_matrix);
-  
-        // constraints.condense(system_matrix, system_rhs);
+
         {
             std::vector<double> values{uD};
             Functions::ConstantFunction<dim> boundary_values_function(values);
