@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deal.II/base/utilities.h>
+#include <deal.II/grid/grid_in.h>
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/lac/vector.h>
@@ -15,7 +16,7 @@
 #include <deal.II/grid/grid_out.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_tools.h>
-#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/fe_simplex_p.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/vector_tools.h>
@@ -113,6 +114,7 @@ void HeatEquation<dim>::setup_system()
                                         QGaussSimplex<dim>(fe.degree + 1),
                                         laplace_matrix);
 
+    laplace_matrix *= mu;
     solution.reinit(dof_handler.n_dofs());
     old_solution.reinit(dof_handler.n_dofs());
     system_rhs.reinit(dof_handler.n_dofs());
@@ -177,10 +179,10 @@ void HeatEquation<dim>::run()
         for (const auto &face : cell->face_iterators()) {
             if (!face->at_boundary()) continue;
 
-            if (face->center()[dim - 1] == 0)
+            if (face->center()[dim - 1] < 1e-12)
                 face->set_all_boundary_ids(0); // Dirichlet boundary ID = 0
             else
-                face->set_all_boundary_ids(1); // Dirichlet boundary ID = 1
+                face->set_all_boundary_ids(1); // Neumann boundary ID = 1
         }
     }
 

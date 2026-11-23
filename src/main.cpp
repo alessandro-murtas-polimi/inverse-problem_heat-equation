@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Heat3D.hpp"
+// #include "Heat3D.hpp"
 #include "HeatEquation.hpp"
 
 int main(int argc, char const *argv[])
@@ -7,7 +7,7 @@ int main(int argc, char const *argv[])
     double T=0.5, dt=0.01, mu=1.0, uD=5.0;
     std::string mesh_filename = "../mesh.msh";
 
-    if (argc == 5) {
+    if (argc == 6) {
         uD = atof(argv[1]);
         T = atof(argv[2]);
         dt = atof(argv[3]);
